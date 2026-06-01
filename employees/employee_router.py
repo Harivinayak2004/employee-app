@@ -6,11 +6,14 @@ from auth.schemas import TokenPayload
 from models.employee import Employee, EmployeeRole
 import employees.employee_service as employee_service
 from database import get_db
+import logging
 from employees.schemas import EmployeeCreate, EmployeeResponseSchema, EmployeeResponseSchema2, EmployeeUpdate, UpdateAddress
+
 
 router = APIRouter(prefix="/employee", tags=["Employees"])
 @router.post("/{emp_id}/departments/{dep_id}",)
 async def map(emp_id:int, dep_id:int,db: AsyncSession = Depends(get_db),current_user: TokenPayload = Depends(get_current_user)):
+
     return await employee_service.map(emp_id,dep_id,db)
 
 @router.delete("/{emp_id}/departments/{dep_id}")

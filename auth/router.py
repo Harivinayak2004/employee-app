@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,9 +11,10 @@ from database.connection import get_db
 from exceptions import UnAuthorizedException
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-
+logger = logging.getLogger(__name__)
 @router.post("/login", response_model = TokenResponse )
 async def login( form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    logger.info(f"User {form.username} logged in successfully")
     token = await auth_service.login( email=form.username, password=form.password, db= db)
     return TokenResponse(access_token=token)
 

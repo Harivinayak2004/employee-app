@@ -27,6 +27,7 @@ logging.basicConfig(
 
 
 
+
 configure_middleware(app)
 register_exception_handlers(app)
 @app.get("/health", tags=["Health"])
