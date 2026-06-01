@@ -3,14 +3,14 @@ Employee entity — ORM mapped class for table `employees`.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database import Base
 from models.employee import Employee
 from models.entity import Entity
+
 
 def _datetime_to_iso(value: datetime | None) -> str | None:
     if value is None:
@@ -24,7 +24,7 @@ class Address(Entity):
     line1: Mapped[str] = mapped_column(String(100), nullable=True)
     city: Mapped[str] = mapped_column(String[100], nullable=True)
     postal_code: Mapped[str] = mapped_column(String(255), nullable=True)
-    country: Mapped[str] = mapped_column(String(255),nullable=True)
+    country: Mapped[str] = mapped_column(String(255), nullable=True)
     employee_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("employees.id", ondelete="CASCADE"),
@@ -32,9 +32,9 @@ class Address(Entity):
         index=True,
     )
     employee: Mapped["Employee"] = relationship(
-    "Employee",
-    back_populates="addresses",
-)
+        "Employee",
+        back_populates="addresses",
+    )
 
     def to_api_dict(self) -> dict[str, Any]:
         """JSON-friendly representation (ISO 8601 for timestamps)."""

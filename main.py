@@ -1,23 +1,15 @@
-from fastapi import FastAPI, Depends, Body, HTTPException, Request, status
-from dataclasses import dataclass
-from typing import TypedDict
+from fastapi import FastAPI
 import logging
-from contextlib import asynccontextmanager
-from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
-from database import get_db
-from exceptions import NotFoundException
-from models.employee import Employee
-from datetime import datetime
 from middleware import configure_middleware
 from config import settings
 from employees.employee_router import router as employee_router
 from exceptions.handlers import register_exception_handlers
 from auth.router import router as auth_router
 from departments.department_router import router as department_router
-app = FastAPI(title="Employee app",description="This is a employee application",version="1.3.0")
+
+app = FastAPI(
+    title="Employee app", description="This is a employee application", version="1.3.0"
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,14 +18,13 @@ logging.basicConfig(
 )
 
 
-
-
 configure_middleware(app)
 register_exception_handlers(app)
+
+
 @app.get("/health", tags=["Health"])
 def health_check():
     return {"status": "healthy", "env": settings.app_env}
-
 
 
 app.include_router(employee_router)
@@ -103,9 +94,3 @@ app.include_router(department_router)
 #     await db.commit()
 #     await db.refresh(db_employee)
 #     return db_employee.to_api_dict()
-
-
-
-
-
-

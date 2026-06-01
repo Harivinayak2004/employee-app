@@ -3,13 +3,13 @@ Employee entity — ORM mapped class for table `employees`.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, Integer
+from sqlalchemy.orm import Mapped, mapped_column
 
-from database import Base
 from models.entity import Entity
+
 
 def _datetime_to_iso(value: datetime | None) -> str | None:
     if value is None:
@@ -40,7 +40,7 @@ class EmpDep(Entity):
             "name": self.name,
             "age": self.age,
             "email": self.email,
-            "address" : self.address,
+            "address": self.address,
             "created_at": _datetime_to_iso(self.created_at),
             "updated_at": _datetime_to_iso(self.updated_at),
             "deleted_at": _datetime_to_iso(self.deleted_at),

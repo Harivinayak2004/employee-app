@@ -2,20 +2,29 @@ import logging
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
-from exceptions import AppException, NotFoundException, ConflictException, BadRequestException, UnAuthorizedException, ForbiddenException
+from exceptions import (
+    AppException,
+    NotFoundException,
+    ConflictException,
+    BadRequestException,
+    UnAuthorizedException,
+    ForbiddenException,
+)
+
 logging = logging.getLogger(__name__)
 
-_STATUS_MAP: dict[type[AppException],int] = {
+_STATUS_MAP: dict[type[AppException], int] = {
     NotFoundException: status.HTTP_404_NOT_FOUND,
     ConflictException: status.HTTP_409_CONFLICT,
     BadRequestException: status.HTTP_400_BAD_REQUEST,
     UnAuthorizedException: status.HTTP_401_UNAUTHORIZED,
-    ForbiddenException: status.HTTP_403_FORBIDDEN
+    ForbiddenException: status.HTTP_403_FORBIDDEN,
 }
 
-def register_exception_handlers(app:FastAPI) -> None:
+
+def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(AppException)
-    async def not_found_exception(request: Request, exc: AppException)->JSONResponse:
+    async def not_found_exception(request: Request, exc: AppException) -> JSONResponse:
         code = _STATUS_MAP.get(type(exc), status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return JSONResponse(status_code=code, content={"detail":exc.detail})
+        return JSONResponse(status_code=code, content={"detail": exc.detail})

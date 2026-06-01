@@ -1,4 +1,3 @@
-
 class AppException(Exception):
     """Base for all application-level errors."""
 
@@ -11,7 +10,6 @@ class NotFoundException(AppException):
     """Requested resource does not exist."""
 
 
-
 class ConflictException(AppException):
     """Operation conflicts with existing state (e.g. duplicate email)."""
 
@@ -19,10 +17,13 @@ class ConflictException(AppException):
 class BadRequestException(AppException):
     """Client input is invalid in a way Pydantic validation didn't catch."""
 
+
 class UnAuthorizedException(AppException):
     pass
+
 
 class ForbiddenException(AppException):
     pass
 
-__all__ = [AppException,NotFoundException,ConflictException,BadRequestException]
+
+__all__ = [AppException, NotFoundException, ConflictException, BadRequestException]

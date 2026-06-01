@@ -15,7 +15,7 @@ from database.connection import Base
 # import models.associations  # noqa: F401
 # import models.department  # noqa: F401
 import models.employee  # noqa: F401
-import models.address 
+
 config = context.config
 
 # Wire Python logging from alembic.ini ([loggers]/[handlers]/...). Optional but lets
@@ -97,4 +97,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-
