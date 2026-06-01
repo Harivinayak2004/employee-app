@@ -1,0 +1,60 @@
+"""
+Employee entity — ORM mapped class for table `employees`.
+"""
+
+from datetime import datetime
+import enum
+from typing import Any, Optional
+
+from sqlalchemy import DateTime, Enum, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from database import Base
+from models.entity import Entity
+
+def _datetime_to_iso(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    return value.isoformat()
+
+class EmployeeRole(str, enum.Enum):
+    UI = "UI"
+    UX = "UX"
+    DEVELOPER = "Developer"
+    HR = "HR"
+    
+
+class Employee(Entity):
+    __abstract__ = False
+    __tablename__ = "employees"
+    
+    
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    age: Mapped[int] = mapped_column(Integer, nullable=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable= False)
+
+    role: Mapped[EmployeeRole] = mapped_column( Enum(EmployeeRole, name="employeerole",values_callable=lambda enum_cls: [e.value for e in enum_cls]),nullable=False,server_default= EmployeeRole.DEVELOPER.value)
+    
+    addresses: Mapped[list["Address"]] = relationship(
+        "Address",
+        back_populates="employee",
+        cascade="all,delete-orphan"
+    )
+
+    departments: Mapped[list["Departments"]] = relationship(
+        "Departments",
+        secondary="empdep",
+        back_populates="employees"
+    )
+    def to_api_dict(self) -> dict[str, Any]:
+        """JSON-friendly representation (ISO 8601 for timestamps)."""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "age": self.age,
+            "email": self.email,
+            "created_at": _datetime_to_iso(self.created_at),
+            "updated_at": _datetime_to_iso(self.updated_at),
+            "deleted_at": _datetime_to_iso(self.deleted_at),
+        }
