@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.utils import verify_password, create_access_token
+from auth.utils import create_access_token, verify_password
 from employees import employee_repo
 from exceptions import UnAuthorizedException
 from models.employee import Employee

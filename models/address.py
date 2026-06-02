@@ -3,13 +3,15 @@ Employee entity — ORM mapped class for table `employees`.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models.employee import Employee
 from models.entity import Entity
+
+if TYPE_CHECKING:
+    from models.employee import Employee
 
 
 def _datetime_to_iso(value: datetime | None) -> str | None:
@@ -31,7 +33,7 @@ class Address(Entity):
         nullable=False,
         index=True,
     )
-    employee: Mapped["Employee"] = relationship(
+    employee: Mapped[Employee] = relationship(
         "Employee",
         back_populates="addresses",
     )

@@ -1,13 +1,16 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
+
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
 from employees.schemas import EmployeeCreate, EmployeeUpdate, UpdateAddress
+from exceptions import ConflictException, NotFoundException
 from models.address import Address
 from models.departments import Departments
+from models.emp_dep import EmpDep
 from models.employee import Employee
-from sqlalchemy import select
-from datetime import datetime
-from exceptions import NotFoundException, ConflictException
-from sqlalchemy.orm import selectinload
 
 
 async def create(db: AsyncSession, body: EmployeeCreate, hashed):
@@ -64,6 +67,8 @@ async def get_by_id(id: int, db: AsyncSession):
     )
     result = await db.scalars(stmt)
     db_employee = result.first()
+    if not db_employee:
+        raise NotFoundException(f"Employee not found {id}")
     return db_employee
 
 
@@ -157,13 +162,20 @@ async def map(emp_id: int, dep_id: int, db: AsyncSession):
     stmt = (
         select(Employee)
         .where(Employee.id == emp_id)
+        .where(Employee.deleted_at.is_(None))
         .options(selectinload(Employee.departments))
     )
     result = await db.execute(stmt)
     employee = result.scalar_one_or_none()
     if not employee:
         raise NotFoundException(detail="Employee not found")
-    dept = await db.get(Departments, dep_id)
+    stmt2 = (
+        select(Departments)
+        .where(Departments.id == dep_id)
+        .where(Departments.deleted_at.is_(None))
+    )
+    result = await db.execute(stmt2)
+    dept = result.scalar_one_or_none()
     if not dept:
         raise NotFoundException(detail="Department not found")
     employee.departments.append(dept)
@@ -174,37 +186,38 @@ async def map(emp_id: int, dep_id: int, db: AsyncSession):
 
 async def unmap(emp_id: int, dep_id: int, db: AsyncSession):
     stmt = (
-        select(Employee)
-        .where(Employee.id == emp_id)
-        .options(selectinload(Employee.departments))
+        select(EmpDep)
+        .where(EmpDep.employee_id == emp_id)
+        .where(EmpDep.department_id == dep_id)
+        .where(EmpDep.deleted_at.is_(None))
     )
     result = await db.execute(stmt)
-    employee = result.scalar_one_or_none()
-    if not employee:
-        raise NotFoundException(detail="Employee not found")
-    dept = await db.get(Departments, dep_id)
-    if not dept:
-        raise NotFoundException(detail="Department not found")
-    employee.departments.remove(dept)
+    empdep = result.scalar_one_or_none()
+    if not empdep:
+        raise NotFoundException(detail="No Mapping Exist")
+    empdep.deleted_at = datetime.now()
     await db.commit()
-    await db.refresh(employee)
-    return {"message": "Department removed from Employee successfully"}
+    return {"message": "mapping removed"}
 
 
 async def removeaddress(emp_id: int, addr_id: int, db: AsyncSession):
     stmt = (
         select(Employee)
         .where(Employee.id == emp_id)
+        .where(Employee.deleted_at.is_(None))
         .options(selectinload(Employee.addresses))
     )
     result = await db.execute(stmt)
     employee = result.scalar_one_or_none()
     if not employee:
         raise NotFoundException(detail="Employee not found")
-    address = next((a for a in employee.addresses if a.id == addr_id), None)
+    address = next(
+        (a for a in employee.addresses if a.id == addr_id and a.deleted_at is None),
+        None,
+    )
     if not address:
         raise NotFoundException(detail="Address not found")
-    employee.addresses.remove(address)
+    address.deleted_at = datetime.now()
 
     await db.commit()
 
@@ -217,6 +230,7 @@ async def updateaddress(
     stmt = (
         select(Employee)
         .where(Employee.id == emp_id)
+        .where(Employee.deleted_at.is_(None))
         .options(selectinload(Employee.addresses))
     )
 
@@ -225,7 +239,10 @@ async def updateaddress(
     if not employee:
         raise NotFoundException(detail="Employee not found")
 
-    address = next((a for a in employee.addresses if a.id == addr_id), None)
+    address = next(
+        (a for a in employee.addresses if a.id == addr_id and a.deleted_at is None),
+        None,
+    )
     if not address:
         raise NotFoundException(detail="Address not found")
 

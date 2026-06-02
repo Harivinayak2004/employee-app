@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
+import departments.department_service as department_service
 from auth.dependencies import get_current_user
 from auth.schemas import TokenPayload
-import departments.department_service as department_service
 from database import get_db
 from departments.schemas import DepartmentCreate, DepartmentResponse, DepartmentUpdate
 

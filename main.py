@@ -1,11 +1,13 @@
-from fastapi import FastAPI
 import logging
-from middleware import configure_middleware
+
+from fastapi import FastAPI
+
+from auth.router import router as auth_router
 from config import settings
+from departments.department_router import router as department_router
 from employees.employee_router import router as employee_router
 from exceptions.handlers import register_exception_handlers
-from auth.router import router as auth_router
-from departments.department_router import router as department_router
+from middleware import configure_middleware
 
 app = FastAPI(
     title="Employee app", description="This is a employee application", version="1.3.0"

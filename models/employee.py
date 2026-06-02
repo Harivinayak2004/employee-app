@@ -2,17 +2,16 @@
 Employee entity — ORM mapped class for table `employees`.
 """
 
-from datetime import datetime
 import enum
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import Enum, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from models.address import Address
-    from models.departments import Departments
+# if TYPE_CHECKING:
+from models.address import Address
+from models.departments import Departments
 from models.entity import Entity
 
 
@@ -48,11 +47,11 @@ class Employee(Entity):
         server_default=EmployeeRole.DEVELOPER.value,
     )
 
-    addresses: Mapped[list["Address"]] = relationship(
+    addresses: Mapped[list[Address]] = relationship(
         "Address", back_populates="employee", cascade="all,delete-orphan"
     )
 
-    departments: Mapped[list["Departments"]] = relationship(
+    departments: Mapped[list[Departments]] = relationship(
         "Departments", secondary="empdep", back_populates="employees"
     )
 

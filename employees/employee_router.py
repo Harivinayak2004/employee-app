@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
+import employees.employee_service as employee_service
 from auth.dependencies import get_current_user, require_role
 from auth.schemas import TokenPayload
-from models.employee import EmployeeRole
-import employees.employee_service as employee_service
 from database import get_db
 from employees.schemas import (
     EmployeeCreate,
@@ -13,7 +13,7 @@ from employees.schemas import (
     EmployeeUpdate,
     UpdateAddress,
 )
-
+from models.employee import EmployeeRole
 
 router = APIRouter(prefix="/employee", tags=["Employees"])
 
@@ -51,24 +51,15 @@ async def removeaddress(
     return await employee_service.removeaddress(emp_id, addr_id, db)
 
 
-@router.put("/{emp_id}/addresses/{addr_id}")
+@router.patch("/{emp_id}/addresses/{addr_id}")
 async def updateaddress(
     emp_id: int,
     addr_id: int,
     body: UpdateAddress,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenPayload = Depends(get_current_user),
+    dependencies=[Depends(require_role(EmployeeRole.HR))],
 ):
     return await employee_service.updateaddress(emp_id, addr_id, body, db)
-
-
-@router.get("/{emp_id}/addresses")
-async def getaddress(
-    emp_id: int,
-    db: AsyncSession = Depends(get_db),
-    current_user: TokenPayload = Depends(get_current_user),
-):
-    return await employee_service.getaddress(emp_id, db)
 
 
 @router.post(

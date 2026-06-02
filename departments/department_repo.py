@@ -1,8 +1,10 @@
+from datetime import datetime
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from exceptions import NotFoundException
 from models.departments import Departments
-from sqlalchemy import select
-from datetime import datetime
 
 
 async def create(db: AsyncSession, name: str):

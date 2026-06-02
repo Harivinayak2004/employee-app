@@ -1,12 +1,13 @@
+from datetime import datetime
+
 from pydantic import (
     BaseModel,
-    Field,
     ConfigDict,
+    EmailStr,
+    Field,
     field_validator,
     model_validator,
-    EmailStr,
 )
-from datetime import datetime
 
 from models.employee import EmployeeRole
 

@@ -1,9 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
+import employees.employee_repo as employee_repo
+from auth.utils import hash_password
 from employees.schemas import EmployeeCreate, EmployeeUpdate, UpdateAddress
 from exceptions import BadRequestException
 from models.employee import Employee
-import employees.employee_repo as employee_repo
-from auth.utils import hash_password
 
 
 async def create(db: AsyncSession, body: EmployeeCreate):
@@ -66,10 +67,6 @@ async def updateaddress(
     emp_id: int, addr_id: int, body: UpdateAddress, db: AsyncSession
 ):
     return await employee_repo.updateaddress(emp_id, addr_id, body, db)
-
-
-async def getaddress(emp_id: int, db: AsyncSession):
-    return await employee_repo.getaddress(emp_id, db)
 
 
 async def get_by_email(email: str, db: AsyncSession) -> Employee | None:

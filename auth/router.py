@@ -3,8 +3,9 @@ import logging
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from auth.schemas import TokenResponse
+
 from auth import service as auth_service
+from auth.schemas import TokenResponse
 from auth.utils import create_access_token, decode_access_token
 from database.connection import get_db
 from exceptions import UnAuthorizedException

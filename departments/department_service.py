@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from exceptions import BadRequestException
+
 import departments.department_repo as department_repo
+from exceptions import BadRequestException
 
 
 async def create(db: AsyncSession, name: str):

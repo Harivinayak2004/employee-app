@@ -3,12 +3,13 @@ Employee entity — ORM mapped class for table `employees`.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models.employee import Employee
+if TYPE_CHECKING:
+    from models.employee import Employee
 from models.entity import Entity
 
 
@@ -23,7 +24,7 @@ class Departments(Entity):
     __tablename__ = "departments"
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    employees: Mapped[list["Employee"]] = relationship(
+    employees: Mapped[list[Employee]] = relationship(
         "Employee", secondary="empdep", back_populates="departments"
     )
 
