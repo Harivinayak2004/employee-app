@@ -7,6 +7,7 @@ import employees.employee_service as employee_service
 from database import get_db
 from employees.schemas import (
     EmployeeCreate,
+    EmployeePatch,
     EmployeeResponseSchema,
     EmployeeResponseSchema2,
     EmployeeUpdate,
@@ -37,7 +38,7 @@ async def unmap(
     db: AsyncSession = Depends(get_db),
     current_user: TokenPayload = Depends(get_current_user),
 ):
-    return await employee_service.map(emp_id, dep_id, db)
+    return await employee_service.unmap(emp_id, dep_id, db)
 
 
 @router.delete("/{emp_id}/addresses/{addr_id}")
@@ -52,13 +53,21 @@ async def removeaddress(
 
 @router.put("/{emp_id}/addresses/{addr_id}")
 async def updateaddress(
-    emp_id: int, addr_id: int, body: UpdateAddress, db: AsyncSession = Depends(get_db)
+    emp_id: int,
+    addr_id: int,
+    body: UpdateAddress,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenPayload = Depends(get_current_user),
 ):
     return await employee_service.updateaddress(emp_id, addr_id, body, db)
 
 
 @router.get("/{emp_id}/addresses")
-async def getaddress(emp_id: int, db: AsyncSession = Depends(get_db)):
+async def getaddress(
+    emp_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenPayload = Depends(get_current_user),
+):
     return await employee_service.getaddress(emp_id, db)
 
 
@@ -79,7 +88,10 @@ async def create(body: EmployeeCreate, db: AsyncSession = Depends(get_db)):
     tags=["Employees"],
     response_model=list[EmployeeResponseSchema],
 )
-async def get_all(db: AsyncSession = Depends(get_db)):
+async def get_all(
+    db: AsyncSession = Depends(get_db),
+    current_user: TokenPayload = Depends(get_current_user),
+):
     result = await employee_service.get_all(db)
     return result
 
@@ -90,7 +102,11 @@ async def get_all(db: AsyncSession = Depends(get_db)):
     tags=["Employees"],
     response_model=list[EmployeeResponseSchema],
 )
-async def search_by_name(db: AsyncSession = Depends(get_db), q: str | None = None):
+async def search_by_name(
+    db: AsyncSession = Depends(get_db),
+    q: str | None = None,
+    current_user: TokenPayload = Depends(get_current_user),
+):
     result = await employee_service.search_by_name(db, q)
     return result
 
@@ -115,14 +131,24 @@ async def get_by_id(
     tags=["Employees"],
     status_code=status.HTTP_200_OK,
     response_model=EmployeeResponseSchema,
+    dependencies=[Depends(require_role(EmployeeRole.HR))],
 )
-async def update(
-    id: int,
-    body: EmployeeUpdate,
-    db: AsyncSession = Depends(get_db),
-    current_user: TokenPayload = Depends(get_current_user),
-):
+async def update(id: int, body: EmployeeUpdate, db: AsyncSession = Depends(get_db)):
     employee = await employee_service.update(id, db, body)
+    return employee
+
+
+@router.patch(
+    "/{id}",
+    tags=["Employees"],
+    status_code=status.HTTP_200_OK,
+    response_model=EmployeeResponseSchema,
+    dependencies=[Depends(require_role(EmployeeRole.HR))],
+)
+async def patchemployee(
+    id: int, body: EmployeePatch, db: AsyncSession = Depends(get_db)
+):
+    employee = await employee_service.patchemployee(id, body, db)
     return employee
 
 
@@ -131,11 +157,11 @@ async def update(
     tags=["Employees"],
     status_code=status.HTTP_200_OK,
     response_model=EmployeeResponseSchema,
+    dependencies=[Depends(require_role(EmployeeRole.HR))],
 )
 async def delete(
     id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: TokenPayload = Depends(get_current_user),
 ):
     result = await employee_service.delete(id, db)
     return result

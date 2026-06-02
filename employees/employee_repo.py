@@ -69,7 +69,10 @@ async def get_by_id(id: int, db: AsyncSession):
 
 async def update(id: int, db: AsyncSession, body: EmployeeUpdate):
     stmt = (
-        select(Employee).where(Employee.deleted_at.is_(None)).where(Employee.id == id)
+        select(Employee)
+        .where(Employee.deleted_at.is_(None))
+        .where(Employee.id == id)
+        .options(selectinload(Employee.addresses))
     )
     result = await db.scalars(stmt)
     db_employee = result.first()
@@ -77,6 +80,31 @@ async def update(id: int, db: AsyncSession, body: EmployeeUpdate):
     db_employee.email = body.email.strip()
     if not db_employee:
         raise NotFoundException(detail="Employee not found")
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise ConflictException(
+            detail=f"Email '{body.email.strip()}' is already in use"
+        )
+    await db.refresh(db_employee)
+    return db_employee
+
+
+async def patchemployee(id: int, body: EmployeeUpdate, db: AsyncSession):
+    stmt = (
+        select(Employee)
+        .where(Employee.deleted_at.is_(None))
+        .where(Employee.id == id)
+        .options(selectinload(Employee.addresses))
+    )
+    result = await db.scalars(stmt)
+    db_employee = result.first()
+    if not db_employee:
+        raise NotFoundException(detail="Employee not found")
+    update_data = body.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_employee, field, value)
     try:
         await db.commit()
     except IntegrityError:
@@ -145,9 +173,13 @@ async def map(emp_id: int, dep_id: int, db: AsyncSession):
 
 
 async def unmap(emp_id: int, dep_id: int, db: AsyncSession):
-    employee = await db.get(Employee, emp_id).options(
-        selectinload(Employee.departments)
+    stmt = (
+        select(Employee)
+        .where(Employee.id == emp_id)
+        .options(selectinload(Employee.departments))
     )
+    result = await db.execute(stmt)
+    employee = result.scalar_one_or_none()
     if not employee:
         raise NotFoundException(detail="Employee not found")
     dept = await db.get(Departments, dep_id)
@@ -156,7 +188,7 @@ async def unmap(emp_id: int, dep_id: int, db: AsyncSession):
     employee.departments.remove(dept)
     await db.commit()
     await db.refresh(employee)
-    return {"message": "Department attached successfully"}
+    return {"message": "Department removed from Employee successfully"}
 
 
 async def removeaddress(emp_id: int, addr_id: int, db: AsyncSession):

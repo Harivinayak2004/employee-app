@@ -35,6 +35,11 @@ async def update(id: int, db: AsyncSession, body: EmployeeUpdate):
     return result
 
 
+async def patchemployee(id: int, body: EmployeeUpdate, db: AsyncSession):
+    result = await employee_repo.patchemployee(id, body, db)
+    return result
+
+
 async def delete(id: int, db: AsyncSession):
     result = await employee_repo.delete(id, db)
     return result
@@ -50,7 +55,7 @@ async def map(emp_id: int, dep_id: int, db: AsyncSession):
 
 
 async def unmap(emp_id: int, dep_id: int, db: AsyncSession):
-    return await employee_repo.umap(emp_id, dep_id, db)
+    return await employee_repo.unmap(emp_id, dep_id, db)
 
 
 async def removeaddress(emp_id: int, addr_id: int, db: AsyncSession):

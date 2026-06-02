@@ -60,7 +60,7 @@ class EmployeeCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
     name: str = Field(min_length=1)
     email: EmailStr
-    age: int | None = None
+    age: int | None = Field(default=None, ge=18, le=100)
     addresses: list[AddressCreate] | None = None
     password: str = Field(min_length=6)
     role: EmployeeRole
@@ -70,10 +70,18 @@ class EmployeeUpdate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
     name: str = Field(min_length=1)
     email: EmailStr
-    age: int | None = None
+    age: int | None = Field(default=None, ge=18, le=100)
     addresses: list[AddressCreate] | None = None
-    password: str = Field(min_length=6)
     role: EmployeeRole
+
+
+class EmployeePatch(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    name: str | None = Field(default=None, min_length=1)
+    email: EmailStr | None = None
+    age: int | None = Field(default=None, ge=18, le=100)
+    addresses: list[AddressCreate] | None = None
+    role: EmployeeRole | None = None
 
 
 class EmployeeResponseSchema(BaseModel):
@@ -91,7 +99,7 @@ class EmployeeResponseSchema2(BaseModel):
     id: int
     name: str
     email: EmailStr
-    age: int | None = None
+    age: int | None = Field(default=None, ge=18, le=100)
     addresses: list[AddressResponse] = []
     role: EmployeeRole
     created_at: datetime | None
